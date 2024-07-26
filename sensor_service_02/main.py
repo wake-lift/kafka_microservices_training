@@ -89,12 +89,13 @@ def imitate_operation():
         serialized_sensor_data = json.dumps(sensor_data)
         send_message(DATA_TOPIC, serialized_sensor_data, SENSOR_KEY)
         print(f'Sent sensor data: {serialized_sensor_data}')
-        time.sleep(3)
+        time.sleep(5)
         if log_dice == 5:
             log_data = generate_log_data()
             serialized_log_data = json.dumps(log_data)
             send_message(LOG_TOPIC, serialized_log_data, LOG_KEY)
             print(f'Sent log data: {serialized_log_data}')
-        log_dice = randint(0, 10)
+        # log_dice = randint(0, 20)
+        log_dice = randint(4, 6)
     imitator_in_operation = False
     kafka_producer.flush()

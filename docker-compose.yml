@@ -1,3 +1,11 @@
+name: kafka_microservices_training
+
+
+volumes:
+  pg_sensors:
+  pg_logs:
+
+
 services:
 
   # kafka:
@@ -91,3 +99,29 @@ services:
     depends_on:
       - kafka-1
       - kafka-2
+  
+  db_sensors:
+    image: postgres:16
+    container_name: db_sensors
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres_user
+      - POSTGRES_PASSWORD=postgres_password
+      - POSTGRES_DB=sensors_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_sensors:/var/lib/postgresql/data/
+  
+  db_logs:
+    image: postgres:16
+    container_name: db_logs
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres_user
+      - POSTGRES_PASSWORD=postgres_password
+      - POSTGRES_DB=logs_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - pg_logs:/var/lib/postgresql/data/

@@ -1,4 +1,10 @@
+import json
+
 from kafka import KafkaConsumer
+from sqlalchemy import insert
+
+from data_processing_service.models import SensorData
+from data_processing_service.db import session_factory
 
 DATA_TOPIC: str = 'data_topic'
 CONSUMER_GROUP: str = 'sensor_data_consumer_group'
@@ -14,7 +20,21 @@ def consumer_loop():
         consumer.subscribe(DATA_TOPIC)
         while True:
             for msg in consumer:
-                print(msg.value.decode('utf-8'))
+                decoded_msg = json.loads(msg.value.decode('utf-8'))
+                print(decoded_msg)
+                stmt = (
+                    insert(SensorData)
+                    .values(
+                        sensor_name=decoded_msg['sensor_name'],
+                        geotag=decoded_msg['geotag'],
+                        timestamp=decoded_msg['timestamp'],
+                        temperature=decoded_msg['temperature'],
+                        humidity=decoded_msg['humidity']
+                    )
+                )
+                with session_factory() as sf:
+                    sf.execute(stmt)
+                    sf.commit()
     finally:
         consumer.close()
 
