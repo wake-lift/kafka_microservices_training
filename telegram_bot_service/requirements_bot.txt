@@ -1,0 +1,12 @@
+APScheduler==3.6.3
+cachetools==4.2.2
+certifi==2024.7.4
+kafka-python @ git+https://github.com/dpkp/kafka-python.git@a6d0579d3cadd3826dd364b01bc12a2173139abc
+python-telegram-bot==13.7
+pytz==2024.1
+setuptools==72.0.0
+six==1.16.0
+tornado==6.4.1
+tzlocal==5.2
+urllib3==2.2.0
+

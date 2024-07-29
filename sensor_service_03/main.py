@@ -1,7 +1,7 @@
 import json
+import time
 from random import choice, choices, randint, uniform
 from string import ascii_letters
-import time
 
 from fastapi import BackgroundTasks, FastAPI
 from kafka import KafkaProducer
@@ -16,7 +16,8 @@ operation_flag: bool = True
 imitator_in_operation: bool = False
 
 kafka_producer = KafkaProducer(
-    bootstrap_servers=['localhost:29092', 'localhost:39092'],
+    # bootstrap_servers=['localhost:29092', 'localhost:39092'],
+    bootstrap_servers=['kafka-1:19092', 'kafka-2:19092'],
     client_id=SENSOR_NAME,
     acks=1,
     linger_ms=100,
@@ -84,18 +85,14 @@ def imitate_operation():
     imitator_in_operation = True
     log_dice = 0
     while operation_flag:
-        print(log_dice)
         sensor_data = generate_sensor_data()
         serialized_sensor_data = json.dumps(sensor_data)
         send_message(DATA_TOPIC, serialized_sensor_data, SENSOR_KEY)
-        print(f'Sent sensor data: {serialized_sensor_data}')
         time.sleep(5)
         if log_dice == 5:
             log_data = generate_log_data()
             serialized_log_data = json.dumps(log_data)
             send_message(LOG_TOPIC, serialized_log_data, LOG_KEY)
-            print(f'Sent log data: {serialized_log_data}')
-        # log_dice = randint(0, 20)
         log_dice = randint(4, 6)
     imitator_in_operation = False
     kafka_producer.flush()

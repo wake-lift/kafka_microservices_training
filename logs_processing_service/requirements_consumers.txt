@@ -1,1 +1,5 @@
+greenlet==3.0.3
 kafka-python @ git+https://github.com/dpkp/kafka-python.git@a6d0579d3cadd3826dd364b01bc12a2173139abc
+psycopg2-binary==2.9.9
+SQLAlchemy==2.0.31
+typing_extensions==4.12.2
