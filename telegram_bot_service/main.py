@@ -1,9 +1,11 @@
-import json
 import logging
 import os
+from io import BytesIO
 from threading import Thread
 from time import localtime, strftime
 
+from fastavro import schemaless_reader
+from fastavro.schema import load_schema
 from kafka import KafkaConsumer
 from telegram import Chat, ReplyKeyboardMarkup, Update
 from telegram.ext import (CallbackContext, CommandHandler, Filters,
@@ -13,6 +15,18 @@ CONSUMER_GROUP: str = 'telegram_bot_consumer_group'
 TELEGRAM_BOT_TOPIC: str = 'telegram_bot_topic'
 
 activate_consumer: bool = False
+
+
+avro_schema: dict = load_schema('critical_log_schema.avsc')
+
+
+def avro_deserialize(schema: dict, binary: bytes) -> dict:
+    """Десериализатор из avro-формата."""
+    bytes_writer = BytesIO()
+    bytes_writer.write(binary)
+    bytes_writer.seek(0)
+    msg = schemaless_reader(bytes_writer, schema)
+    return msg
 
 
 def wake_up(update: Update, context: CallbackContext) -> None:
@@ -36,7 +50,7 @@ def button_shortcut(button_names: list[list]) -> ReplyKeyboardMarkup:
     )
 
 
-def format_message(msg: str) -> str:
+def format_message(msg: dict) -> str:
     """Форматирует сообщение в читаемый вид."""
     date = strftime('%Y-%m-%d %H:%M:%S', localtime(int(msg['timestamp'])))
     return (
@@ -57,7 +71,7 @@ def consumer_loop(context: CallbackContext, chat: Chat):
     consumer.subscribe(TELEGRAM_BOT_TOPIC)
     while True:
         for msg in consumer:
-            decoded_msg = json.loads(msg.value.decode('utf-8'))
+            decoded_msg = avro_deserialize(avro_schema, msg.value)
             if activate_consumer:
                 send_message(context, chat, format_message(decoded_msg))
                 logging.warning('Сообщение отправлено в чат пользователю')

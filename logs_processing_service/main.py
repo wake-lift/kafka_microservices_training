@@ -1,6 +1,9 @@
 import json
 import logging
+from io import BytesIO
 
+from fastavro import schemaless_writer
+from fastavro.schema import load_schema
 from kafka import KafkaConsumer, KafkaProducer
 from sqlalchemy import insert
 
@@ -27,6 +30,15 @@ producer = KafkaProducer(
     linger_ms=100,
 )
 
+avro_schema: dict = load_schema('critical_log_schema.avsc')
+
+
+def avro_serialize(schema: dict, data: dict) -> bytes:
+    """Сериализатор в формат avro."""
+    bytes_writer = BytesIO()
+    schemaless_writer(bytes_writer, schema, data)
+    return bytes_writer.getvalue()
+
 
 def consumer_loop():
     try:
@@ -48,11 +60,11 @@ def consumer_loop():
                     sf.execute(stmt)
                     sf.commit()
                 if decoded_msg['level'] == 'CRITICAL':
-                    bot_msg = json.dumps(decoded_msg)
+                    bot_msg = avro_serialize(avro_schema, decoded_msg)
                     logging.warning(f'Получен лог CRITICAL: {decoded_msg}')
                     producer.send(
                         TELEGRAM_BOT_TOPIC,
-                        value=bot_msg.encode('utf-8'),
+                        value=bot_msg,
                         key=LOG_PRODUCER_KEY.encode('utf-8')
                     )
                     producer.flush()

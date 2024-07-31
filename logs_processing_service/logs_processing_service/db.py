@@ -10,7 +10,7 @@ DB_URL: str = (
     'db_logs:5432/logs_db'
 )
 
-engine = create_engine(DB_URL) #, echo=True)
+engine = create_engine(DB_URL)  # , echo=True)
 
 session_factory = sessionmaker(engine)
 

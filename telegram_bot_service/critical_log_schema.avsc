@@ -1,0 +1,11 @@
+{
+    "namespace": "sensors_logs",
+    "name": "logs_to_telegram_bot",
+    "type": "record",
+    "fields": [
+        {"name": "sensor_name", "type": "string"},
+        {"name": "timestamp", "type": "int"},
+        {"name": "level", "type": "string"},
+        {"name": "log_message", "type": "string"}
+    ]
+}
